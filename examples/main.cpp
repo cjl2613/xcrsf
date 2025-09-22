@@ -28,16 +28,26 @@
 #include "xcrsf/crossfire.h"
 
 int main() {
-    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA10");
+    auto crossfire = crossfire::XCrossfire("/dev/ttyAMA0");
     if (crossfire.open_port()) { std::printf("Port opened...\n"); }
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    while (crossfire.is_paired()) {
-        const auto channels = crossfire.get_channel_state();
-        for (int i = 0; i < 4; i++) {
-            if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
+    while (true) {
+        while (!crossfire.is_paired()) {
+            std::printf("Waiting for reconnect...\n");
+            auto _ = crossfire.open_port();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
-        const auto _ = crossfire.set_telemetry_battery(11.8, 25, 1200, 96);
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+
+        std::printf("Remote connected!\n");
+        while (crossfire.is_paired()) {
+            const auto channels = crossfire.get_channel_state();
+            for (int i = 0; i < 4; i++) {
+                if (channels.front() != 0) { std::printf("Channel %d: %u\n", i, channels[i]); }
+            }
+            const auto _ = crossfire.set_telemetry_battery(11.8, 25, 1200, 96);
+            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        }
     }
     return 0;
 }

@@ -45,6 +45,7 @@ namespace crossfire {
         if (this->uart_fd_ == -1) { return false; }
 
         this->is_paired_.store(true, STD_MEMORY_ORDER);
+        if (this->thread_parser_.joinable()) { this->thread_parser_.join(); }
         this->thread_parser_ = std::thread{&Handler::receive_crsf, this};
         return true;
     }
