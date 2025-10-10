@@ -25,7 +25,6 @@
 #pragma once
 #include <array>
 #include <thread>
-#include <atomic>
 
 #include "xcrsf/handler.h"
 
